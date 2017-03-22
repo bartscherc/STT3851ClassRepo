@@ -1,0 +1,129 @@
+---
+title: "Project1final.rmd"
+output: html_document
+---
+
+```{r}
+library(DT)
+library(MASS)
+library(car)
+```
+
+
+```{r}
+HP<- read.table("http://ww2.amstat.org/publications/jse/datasets/homes76.dat.txt",header=TRUE)
+```
+
+```{r}
+HP<-HP[-c(1,7,10,15,16,17,18,19)]
+```
+
+```{r}
+names(HP)[names(HP) == 'Y'] <- 'price'
+names(HP)[names(HP) == 'X1'] <- 'size'
+names(HP)[names(HP) == 'X2'] <- 'lot'
+names(HP)[names(HP) == 'X3'] <- 'bath'
+names(HP)[names(HP) == 'X4'] <- 'bed'
+names(HP)[names(HP) == 'X5'] <- 'age'
+names(HP)[names(HP) == 'X6'] <- 'garage'
+names(HP)[names(HP) == 'D7'] <- 'active'
+```
+
+```{r}
+datatable(HP)
+```
+
+```{r}
+mean(HP$size)
+mean(HP$lot)
+mean(HP$year)
+```
+
+## Using stepAIC
+
+price is measured in hundreds of thousands of dollars and size is measured in thousands of square feet
+
+```{r}
+ full<-lm(price~.,data=HP)
+```
+
+```{r}
+mod.be<-stepAIC(full,direction =c ("backward"))
+```
+
+```{r}
+back<-lm(price~1,data=HP)
+```
+
+```{r}
+mod.fs<-stepAIC(back, scope =list (upper=full,lower=back ))
+```
+
+I believe mod.be is better because it gives us more variables that are statiscally significant
+
+## mod1
+
+```{r}
+mod1<-lm(price~ size + lot + bath + bed + age + garage + active + elem, data=HP)
+
+summary(mod1)
+
+residualPlots(mod1)
+```
+
+It looks like a quadratic function is fitting to most of my plots instaed of a linear function, so it seems that I would need to square some of the variables
+
+The Adjusted $R^2 = .4411$
+
+## mod2
+
+```{r}
+mod2<-lm(price~ size + lot + bath + bath:bed + bed + age + I(age^2) + garage + active + elem, data=HP)
+
+summary(mod2)
+```
+
+The Adjusted $R^2 = .4686$
+
+## mod3
+
+```{r}
+mod3<-lm(price~ size + lot + bath + bath:bed + bed + age + I(age^2) + garage + active + I(elem == 'edison') + I(elem == 'harris'), data=HP)
+
+summary(mod3)
+```
+
+##  training mean square prediction error f
+
+```{r}
+mean(resid(mod.fs)^2)
+```
+
+```{r}
+mean(resid(mod.be)^2)
+```
+
+```{r}
+mean(resid(mod1)^2)
+```
+
+```{r}
+mean(resid(mod2)^2)
+```
+
+```{r}
+mean(resid(mod3)^2)
+```
+
+mod2 has the smallest training mean square prediction error. Yes I do thik it will have the smallest test mean square prediction error
+
+## mod 3 prediction interval
+
+```{r}
+newdata<-data.frame(size=1.879,lot=4, bath=2.5, bed=3, year=1975, garage=2, age =.5, elem = "Parker", active = 1)
+
+predict(mod3,newdata,interval="predict")
+```
+
+
+
