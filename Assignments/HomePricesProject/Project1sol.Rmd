@@ -41,7 +41,7 @@ mean(HP$year)
 
 ## Using stepAIC
 
-price is measured in hundreds of thousands of dollars and size is measured in thousands of square feet
+price is measured in hundreds of thousands of dollars and size is measured in thousands of square feet.
 
 ```{r}
  full<-lm(price~.,data=HP)
